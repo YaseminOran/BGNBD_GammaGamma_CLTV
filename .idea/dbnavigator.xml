@@ -26,7 +26,7 @@
     <show-object-properties value="false" />
     <loaded-nodes>
       <connection connection-id="14e3e4ec-5310-4838-ade6-7e15ecae8947">
-        <schema name="group_04" object-types="table, view, procedure, function" />
+        <schema name="group_04" object-types="table, view" />
       </connection>
     </loaded-nodes>
   </component>
@@ -42,6 +42,7 @@
     <connection id="14e3e4ec-5310-4838-ade6-7e15ecae8947" />
   </component>
   <component name="DBNavigator.Project.DatasetFilterManager">
+    <filter-actions connection-id="14e3e4ec-5310-4838-ade6-7e15ecae8947" dataset="group_04.Yasemin_Arslan" active-filter-id="" />
     <filter-actions connection-id="14e3e4ec-5310-4838-ade6-7e15ecae8947" dataset="group_04.online_retail_2010_2011" active-filter-id="" />
     <filter-actions connection-id="14e3e4ec-5310-4838-ade6-7e15ecae8947" dataset="group_04.emrah_ozogel" active-filter-id="e9774093-b779-4c44-957f-a0e29b10403a">
       <filter id="e9774093-b779-4c44-957f-a0e29b10403a" name="Filter 1" temporary="false" custom-name="false" type="basic" join-type="AND">

@@ -77,7 +77,7 @@ cltv_df = df_UK.groupby('CustomerID').agg({'InvoiceDate': [lambda date: (date.ma
 cltv_df.columns = cltv_df.columns.droplevel(0)
 cltv_df.columns = ['recency', 'T', 'frequency', 'monetary']
 
-
+cltv_df.head()
 cltv_df["monetary"] = cltv_df["monetary"] / cltv_df["frequency"]
 
 cltv_df = cltv_df[(cltv_df['frequency'] > 1)]
@@ -116,17 +116,27 @@ cltv_df["expected_purc_1_week"] = bgf.predict(1,
 cltv_df.sort_values("expected_purc_1_week", ascending=False).head(20)
 
 
-bgf.conditional_expected_number_of_purchases_up_to_time(4,
-                                                        cltv_df['frequency'],
-                                                        cltv_df['recency'],
-                                                        cltv_df['T']).sort_values(ascending=False).head(10)
+#1 ay içinde en çok satın alma beklediğimiz 10 müşteri
+bgf.predict(4,
+            cltv_df['frequency'],
+            cltv_df['recency'],
+            cltv_df['T']).sort_values(ascending=False).head(10)
 
 
 cltv_df["expected_purc_1_month"] = bgf.predict(4,
-                                              cltv_df['frequency'],
-                                              cltv_df['recency'],
-                                              cltv_df['T'])
+                                               cltv_df['frequency'],
+                                               cltv_df['recency'],
+                                               cltv_df['T'])
+
+
 cltv_df.sort_values("expected_purc_1_month", ascending=False).head(20)
+
+
+
+
+
+
+
 
 #GAMMA-GAMMA Modelinin Kurulması
 ggf = GammaGammaFitter(penalizer_coef=0.01)
@@ -136,12 +146,14 @@ ggf.fit(cltv_df['frequency'], cltv_df['monetary'])
 ggf.conditional_expected_average_profit(cltv_df['frequency'],
                                         cltv_df['monetary']).head(10)
 
-
+# en karlı ilk 10 müşteri
 ggf.conditional_expected_average_profit(cltv_df['frequency'],
                                         cltv_df['monetary']).sort_values(ascending=False).head(10)
 
 cltv_df["expected_average_profit"] = ggf.conditional_expected_average_profit(cltv_df['frequency'],
                                                                              cltv_df['monetary'])
+
+cltv_df.sort_values("expected_average_profit", ascending=False).head(20)
 
 
 ##BG-NBD ve GG modeli ile CLTV'nin hesaplanması.
@@ -151,15 +163,64 @@ cltv = ggf.customer_lifetime_value(bgf,
                                    cltv_df['recency'],
                                    cltv_df['T'],
                                    cltv_df['monetary'],
-                                   time=6,  # 3 aylık
+                                   time=6,  # 6 aylık
                                    freq="W",  # T'nin frekans bilgisi.
                                    discount_rate=0.01)
 
-cltv.head()
-
 
 cltv = cltv.reset_index()
+cltv.sort_values(by= "clv", ascending=False).head()
+
+# 6 aylık zaman periyondunda en değerli 50 müşteri
 cltv.sort_values(by="clv", ascending=False).head(50)
+
+#1 aylık ile 12 aylık kıyaslaması
+
+cltv_month = ggf.customer_lifetime_value(bgf,
+                                       cltv_df['frequency'],
+                                       cltv_df['recency'],
+                                       cltv_df['T'],
+                                       cltv_df['monetary'],
+                                       time=1,  # 1 aylık
+                                       freq="W",  # T'nin frekans bilgisi.
+                                       discount_rate=0.01)
+
+cltv_month = cltv_month.reset_index()
+cltv_month.head()
+
+cltv_year = ggf.customer_lifetime_value(bgf,
+                                       cltv_df['frequency'],
+                                       cltv_df['recency'],
+                                       cltv_df['T'],
+                                       cltv_df['monetary'],
+                                       time=12,  # 12 aylık
+                                       freq="W",  # T'nin frekans bilgisi.
+                                       discount_rate=0.01)
+
+cltv_year.head()
+cltv_year = cltv_year.reset_index()
+cltv_month.sort_values(by="clv", ascending=False).head(50)
+cltv_year.sort_values(by="clv", ascending=False).head(50)
+
+
+
+cltv_month = pd.DataFrame(cltv_month)
+cltv_year = pd.DataFrame(cltv_year)
+
+cltv_m_y = cltv_month.merge(cltv_year, on="CustomerID", how="left")
+cltv_m_y.head()
+cltv_m_y = cltv_m_y.reset_index()
+
+
+
+cltv_m_y.drop("index", axis=1, inplace=True)
+#cltv_m_y.drop("index_x", axis=1, inplace=True)
+#cltv_m_y.drop("index_y", axis=1, inplace=True)
+
+cltv_m_y.columns = ["Customer ID", "1_month_clv", "12_month_clv"]
+cltv_m_y.head(10).sort_values("12_month_clv", ascending= False)
+
+
 
 cltv_final = cltv_df.merge(cltv, on="CustomerID", how="left")
 
